@@ -27,7 +27,6 @@ serve(async (req) => {
       return new Response("Method not allowed", { status: 405 });
     }
 
-    const { updatedContent, schemaType } = await req.json();
 
     const endpointUrl = 
       schemaType ? 
@@ -35,9 +34,38 @@ serve(async (req) => {
                               : "https://bprtest.bpint1040.net/bpr-arc-xp-system-api-dev/api/updateDependentSystems/stores" 
       : "https://bprtest.bpint1040.net/bpr-arc-xp-system-api-dev/api/updateDependentSystems/malls"
     
+    
+    if(req.method === 'DELETE'){
+      const { contentId, schemaType } = await req.json();
+
+      // Create a DELETE request with headers
+
+      console.log("Delete Content ID:", contentId);
+      const response = await fetch(endpointUrl, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "client_id": Deno.env.get('CLIENT_ID'),
+          "client_secret": Deno.env.get('CLIENT_SECRET'),
+        },
+        body: JSON.stringify(contentId),
+      });
+
+      const responseData = await response.json();
+      console.log("API Response:", responseData);
+
+      return new Response(JSON.stringify(responseData), {
+        headers: { "Content-Type": "application/json" },
+      });
+
+    }
+
+    const { contentData, schemaType } = await req.json();
+
+    
     console.log("Endpoint URL:", endpointUrl)
 
-    console.log("UpdatedContent: ", JSON.stringify(updatedContent));
+    console.log("UpdatedContent: ", JSON.stringify(contentData));
     console.log("schemaType: ", schemaType);
 
     // Create a POST request with headers
@@ -48,7 +76,7 @@ serve(async (req) => {
         "client_id": Deno.env.get('CLIENT_ID'),
         "client_secret": Deno.env.get('CLIENT_SECRET'),
       },
-      body: JSON.stringify(updatedContent),
+      body: JSON.stringify(contentData),
     });
 
     const responseData = await response.json();
