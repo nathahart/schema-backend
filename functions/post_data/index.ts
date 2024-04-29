@@ -11,7 +11,7 @@ serve(async (req) => {
   const headers = new Headers({
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*", // Adjust this according to your CORS policy
-    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Methods": "POST, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, client_id, client_secret",
   });
 
@@ -21,13 +21,30 @@ serve(async (req) => {
   }
 
   try {
+    
+    let schemaType: string;
+    let contentId: any;
+    let contentData: any;
 
+    if (req.method === "POST") {
+      console.log("CAME TO POST");
+      const data = await req.json();
+      schemaType = data.schemaType; 
+      contentData = data.contentData; 
+    }
+    if (req.method === "DELETE") {
+      console.log("CAME TO DELETE");
+      const data = await req.json();
+      schemaType = data.schemaType; 
+      contentId = data.contentId; 
+    }
+  
     console.log("Request method:", req.method);
-    if (req.method !== "POST") {
+    if (req.method !== "POST" && req.method !== "DELETE") {
       return new Response("Method not allowed", { status: 405 });
     }
 
-
+    console.log("SCHEMATYPE->", schemaType);
     const endpointUrl = 
       schemaType ? 
         schemaType === 'Mall' ? "https://bprtest.bpint1040.net/bpr-arc-xp-system-api-dev/api/updateDependentSystems/malls" 
@@ -36,7 +53,6 @@ serve(async (req) => {
     
     
     if(req.method === 'DELETE'){
-      const { contentId, schemaType } = await req.json();
 
       // Create a DELETE request with headers
 
@@ -59,8 +75,6 @@ serve(async (req) => {
       });
 
     }
-
-    const { contentData, schemaType } = await req.json();
 
     
     console.log("Endpoint URL:", endpointUrl)
